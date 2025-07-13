@@ -32,12 +32,11 @@ const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, 
     setShowPlayerModal(true);
   };
 
-  const handlePlayerSelect = (playerId) => {
-    const player = allPlayers.find(p => p.id.toString() === playerId.toString());
-    const playerName = player ? player.name : '';
+  const handlePlayerSelect = (playerName) => {
     setCurrentEvent({ ...currentEvent, player: playerName });
     setShowPlayerModal(false);
-    setShowResultModal(true);
+    setLocationType('start');
+    setShowLocationModal(true);
   };
 
   const handleLocationSelect = async (x, y) => {
@@ -96,7 +95,6 @@ const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, 
       </div>
       {showPlayerModal && (
         <PlayerModal
-          players={allPlayers}
           onConfirm={handlePlayerSelect}
           onClose={() => setShowPlayerModal(false)}
           videoRef={videoRef}

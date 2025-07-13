@@ -1,8 +1,20 @@
 import { useState } from 'react';
 import React from 'react';
+import { useApp } from '../context/AppContext';
 
-const PlayerReceiverModal = ({ players = [], onConfirm, onClose }) => {
+const PlayerReceiverModal = ({ onConfirm, onClose, currentPlayer }) => {
   const [selectedPlayer, setSelectedPlayer] = useState('');
+  const { state } = useApp();
+  
+  // Get all players from the selected lineup (starting + substitutes) and filter out current player
+  const allPlayers = [...state.lineup.starting, ...state.lineup.substitutes];
+  const availablePlayers = allPlayers.filter(player => player.name !== currentPlayer);
+
+  const handleConfirm = () => {
+    if (selectedPlayer) {
+      onConfirm(selectedPlayer);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-transparent flex items-center justify-center">
@@ -14,25 +26,15 @@ const PlayerReceiverModal = ({ players = [], onConfirm, onClose }) => {
           className="w-full p-2 border rounded"
         >
           <option value="" disabled>Select a receiver player</option>
-          {players.length > 0 && typeof players[0] === 'object'
-            ? players.map((player) => (
-              <option key={player.id} value={player.id}>{player.name}</option>
-            ))
-            : players.map((player) => (
-              <option key={player} value={player}>{player}</option>
-            ))}
+          {availablePlayers.map((player) => (
+            <option key={player.id} value={player.name}>
+              {player.name}
+            </option>
+          ))}
         </select>
         <div className="mt-2 flex space-x-2">
           <button
-            onClick={() => {
-              if (!selectedPlayer) return;
-              if (players.length > 0 && typeof players[0] === 'object') {
-                const playerObj = players.find(p => p.id.toString() === selectedPlayer);
-                onConfirm(playerObj);
-              } else {
-                onConfirm(selectedPlayer);
-              }
-            }}
+            onClick={handleConfirm}
             className="p-2 bg-blue-500 text-white rounded disabled:opacity-50"
             disabled={!selectedPlayer}
           >

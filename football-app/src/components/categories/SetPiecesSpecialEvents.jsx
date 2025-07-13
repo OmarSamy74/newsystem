@@ -73,30 +73,33 @@ const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, fin
     }
   };
 
-  const handlePlayerSelect = (playerId) => {
-    const player = allPlayers.find(p => p.id.toString() === playerId.toString());
-    const playerName = player ? player.name : '';
-    
-    if (currentEvent.type === 'Sub') {
-      setCurrentEvent({ ...currentEvent, playerOut: playerName });
+  const handlePlayerSelect = (playerName) => {
+    if (selectingPlayerOut && currentEvent.type === 'Sub') {
+      const updatedEvent = { ...currentEvent, playerOut: playerName, player: null };
+      setCurrentEvent(updatedEvent);
+      setSelectingPlayerOut(false);
+      setSelectingPlayerIn(true);
+      setShowPlayerModal(true);
+    } else if (selectingPlayerIn && currentEvent.type === 'Sub') {
+      const updatedEvent = {
+        ...currentEvent,
+        playerIn: playerName,
+        player: null,
+      };
+      setCurrentEvent(null);
       setShowPlayerModal(false);
-      setShowPlayerInModal(true);
+      setSelectingPlayerOut(false);
+      setSelectingPlayerIn(false);
+      finalizeEvent(updatedEvent);
     } else {
       setCurrentEvent({ ...currentEvent, player: playerName });
       setShowPlayerModal(false);
-      setLocationType('start');
-      setShowLocationModal(true);
+      if (['Offside', 'Own Goal'].includes(currentEvent.type)) {
+        setShowLocationModal(true);
+      } else {
+        finalizeEvent({ ...currentEvent, player: playerName });
+      }
     }
-  };
-
-  const handlePlayerInSelect = (playerId) => {
-    const player = allPlayers.find(p => p.id.toString() === playerId.toString());
-    const playerName = player ? player.name : '';
-    const updatedEvent = { ...currentEvent, playerIn: playerName };
-    
-    setCurrentEvent(updatedEvent);
-    finalizeEvent(updatedEvent); 
-    setShowPlayerInModal(false);
   };
 
   const handleTeamSelect = (teamName) => {
@@ -139,13 +142,14 @@ const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, fin
       </div>
       {showPlayerModal && (
         <PlayerModal
-          players={allPlayers}
+          key={selectingPlayerOut ? 'player-out' : selectingPlayerIn ? 'player-in' : 'player'}
+          selectingPlayerOut={selectingPlayerOut}
+          selectingPlayerIn={selectingPlayerIn}
           onConfirm={handlePlayerSelect}
-          onClose={() => setShowPlayerModal(false)}
+          onClose={handleModalClose}
           videoRef={videoRef}
           setIsPlaying={setIsPlaying}
-          selectingPlayerOut={currentEvent?.type === 'Sub' ? true : false}
-          selectingPlayerIn={false}
+          title={selectingPlayerOut ? 'Select Player Out' : selectingPlayerIn ? 'Select Player In' : 'Select Player'}
         />
       )}
       {showTeamModal && (

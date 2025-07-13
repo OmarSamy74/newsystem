@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, LogOut, Upload, Play, Pause } from 'lucide-react';
 
 // Import analysis components
@@ -17,76 +15,15 @@ import PossessionDribblingEvents from '../components/categories/PossessionDribbl
 import DefensiveEvents from '../components/categories/DefensiveEvents';
 import SetPiecesSpecialEvents from '../components/categories/SetPiecesSpecialEvents';
 
-// Enhanced ExportButton component that uses the filename generator
-const EnhancedExportButton = ({ events, ...props }) => {
-  const { state } = useApp();
-  
-  const generateFilename = (homeTeam, awayTeam) => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`;
-    
-    const homeTeamName = homeTeam?.name || 'Home';
-    const awayTeamName = awayTeam?.name || 'Away';
-    
-    return `${homeTeamName} Vs ${awayTeamName} ${dateString}`;
-  };
-  
-  const handleExport = () => {
-    const filename = generateFilename(state.homeTeam, state.awayTeam);
-    
-    // Create CSV content
-    const headers = ['Event Type', 'Player', 'Time', 'Extra Info'];
-    const csvContent = [
-      headers.join(','),
-      ...events.map(event => [
-        event.eventType || '',
-        event.playerName || '',
-        event.videoTimestamp || '',
-        event.extraInfo || ''
-      ].map(field => `"${field}"`).join(','))
-    ].join('\n');
-    
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  
-  return (
-    <button
-      onClick={handleExport}
-      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-      {...props}
-    >
-      Export Analysis
-    </button>
-  );
-};
-
 const AnalysisPage = () => {
   const [videoSrc, setVideoSrc] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [events, setEvents] = useState([]);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
   const videoRef = useRef(null);
   const { state, actions } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!state.homeTeam || !state.awayTeam || state.lineup.starting.length === 0) {
-      navigate('/lineup');
-      return;
-    }
-    
     // Load saved video and events from localStorage
     const savedVideo = localStorage.getItem('currentVideo');
     if (savedVideo) {
@@ -112,7 +49,7 @@ const AnalysisPage = () => {
       }));
       setEvents(parsedEvents);
     }
-  }, [state.homeTeam, state.awayTeam, state.lineup, navigate]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -174,7 +111,7 @@ const AnalysisPage = () => {
       id: eventId,
       endTime,
       duration,
-      player: updatedEvent.type === 'Sub' ? null : (updatedEvent.player || selectedPlayer?.name),
+      player: updatedEvent.type === 'Sub' ? null : updatedEvent.player,
       videoTimestamp: updatedEvent.videoTimestamp || 0,
       extraInfo: updatedEvent.type === 'Sub' ? '-' : updatedEvent.extraInfo || '-',
       passType: updatedEvent.type === 'Sub' ? '-' : updatedEvent.passType || '-',
@@ -183,7 +120,7 @@ const AnalysisPage = () => {
       playerReceiver: updatedEvent.type === 'Sub' ? '-' : updatedEvent.playerReceiver || '-',
       playerOut: updatedEvent.type === 'Sub' ? updatedEvent.playerOut || '-' : '-',
       playerIn: updatedEvent.type === 'Sub' ? updatedEvent.playerIn || '-' : '-',
-      team: updatedEvent.team || state.homeTeam?.name || '-',
+      team: updatedEvent.team || '-',
       startLocation: updatedEvent.type === 'Sub' ? null : updatedEvent.startLocation,
       endLocation: updatedEvent.type === 'Sub' ? null : updatedEvent.endLocation,
     };
@@ -192,10 +129,6 @@ const AnalysisPage = () => {
     updatedEvents.push(completedEvent);
     setEvents(updatedEvents);
     localStorage.setItem('footballEvents', JSON.stringify(updatedEvents));
-
-    if (videoRef.current && videoRef.current.src) {
-      videoRef.current.pause();
-    }
   };
 
   const handleEventClick = (event) => {
@@ -217,10 +150,8 @@ const AnalysisPage = () => {
     navigate('/login');
   };
 
-  // Get all players (starting + substitutes) for dropdown
+  // Get all players (starting + substitutes) for the event components
   const allPlayers = [...state.lineup.starting, ...state.lineup.substitutes];
-
-  console.log("allPlayers in AnalysisPage:", allPlayers);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -289,46 +220,6 @@ const AnalysisPage = () => {
           </Button>
         </div>
 
-        {/* Player Selection */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Current Player Selection</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Select
-                  value={selectedPlayer?.id?.toString() || ''}
-                  onValueChange={(value) => {
-                    const player = allPlayers.find(p => p.id.toString() === value);
-                    setSelectedPlayer(player);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a player for analysis" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allPlayers.length === 0 ? (
-                      <option value="">No players available</option>
-                    ) : (
-                      allPlayers.map((player) => (
-                        <SelectItem key={player.id} value={player.id.toString()}>
-                          {player.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              {selectedPlayer && (
-                <div className="text-sm text-gray-600">
-                  Selected: <span className="font-medium">{selectedPlayer.name}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6">
           {/* Video Section */}
           <div className="lg:w-2/3">
@@ -381,7 +272,6 @@ const AnalysisPage = () => {
               events={events}
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
-              selectedPlayer={selectedPlayer}
               allPlayers={allPlayers}
             />
             <ShotEvents
@@ -390,7 +280,7 @@ const AnalysisPage = () => {
               events={events}
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
-              selectedPlayer={selectedPlayer}
+              allPlayers={allPlayers}
             />
             <PossessionDribblingEvents
               videoRef={videoRef}
@@ -398,7 +288,7 @@ const AnalysisPage = () => {
               events={events}
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
-              selectedPlayer={selectedPlayer}
+              allPlayers={allPlayers}
             />
             <DefensiveEvents
               videoRef={videoRef}
@@ -406,7 +296,7 @@ const AnalysisPage = () => {
               events={events}
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
-              selectedPlayer={selectedPlayer}
+              allPlayers={allPlayers}
             />
             <SetPiecesSpecialEvents
               videoRef={videoRef}
@@ -414,7 +304,7 @@ const AnalysisPage = () => {
               events={events}
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
-              selectedPlayer={selectedPlayer}
+              allPlayers={allPlayers}
             />
           </div>
         </div>
@@ -423,7 +313,7 @@ const AnalysisPage = () => {
         <div className="mt-8">
           <EventTable events={events} onEventClick={handleEventClick} setEvents={setEvents} />
           <div className="mt-4">
-            <EnhancedExportButton events={events} />
+            <ExportButton events={events} />
           </div>
         </div>
       </div>

@@ -55,9 +55,7 @@ const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
     }
   };
 
-  const handlePlayerSelect = (playerId) => {
-    const player = allPlayers.find(p => p.id.toString() === playerId.toString());
-    const playerName = player ? player.name : '';
+  const handlePlayerSelect = (playerName) => {
     setCurrentEvent({ ...currentEvent, player: playerName });
     setShowPlayerModal(false);
     setShowTechniqueModal(true);
@@ -184,7 +182,6 @@ const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
       </div>
       {showPlayerModal && (
         <PlayerModal
-          players={allPlayers}
           onConfirm={handlePlayerSelect}
           onClose={() => setShowPlayerModal(false)}
           videoRef={videoRef}
@@ -220,11 +217,11 @@ const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
       )}
       {showPlayerReceiverModal && (
         <PlayerReceiverModal
-          players={allPlayers}
           onConfirm={handlePlayerReceiverSelect}
           onClose={() => setShowPlayerReceiverModal(false)}
           videoRef={videoRef}
           setIsPlaying={setIsPlaying}
+          currentPlayer={currentEvent?.player}
         />
       )}
       {showExtraInfoModal && (
