@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 const ResultModal = ({ eventType, currentEvent, onConfirm, onClose, videoRef, setIsPlaying, outcomes }) => {
   const results = outcomes || (
@@ -22,29 +23,33 @@ const ResultModal = ({ eventType, currentEvent, onConfirm, onClose, videoRef, se
   };
 
   return (
-    <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-        <h2 className="text-lg font-semibold mb-4">Select Result</h2>
-        <div className="flex flex-col space-y-2">
-          {results.length > 0 ? (
-            results.map((result) => (
-              <button
-                key={result}
-                onClick={() => handleResultSelect(result)}
-                className="p-2 bg-gray-500 hover:bg-gray-600 text-white rounded transition-colors"
-              >
-                {result}
-              </button>
-            ))
-          ) : (
-            <p className="text-red-500">No results available for this event.</p>
-          )}
-          <button
-            onClick={onClose}
-            className="p-2 bg-red-500 hover:bg-red-600 text-white rounded mt-4"
-          >
-            Cancel
-          </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white text-gray-900 flex flex-col gap-6 rounded-xl border border-gray-200 py-6 shadow-sm w-full max-w-sm">
+        <div className="px-6">
+          <h2 className="text-lg font-semibold mb-4">Select Result</h2>
+          <div className="flex flex-col space-y-2">
+            {results.length > 0 ? (
+              results.map((result) => (
+                <Button
+                  key={result}
+                  onClick={() => handleResultSelect(result)}
+                  variant="outline"
+                  className="justify-start"
+                >
+                  {result}
+                </Button>
+              ))
+            ) : (
+              <p className="text-destructive">No results available for this event.</p>
+            )}
+            <Button
+              variant="destructive"
+              onClick={onClose}
+              className="mt-4"
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     </div>

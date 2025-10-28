@@ -6,10 +6,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Import pages
 import LoginPage from './pages/LoginPage';
 import LeagueSelection from './pages/LeagueSelection';
+import TeamSelection from './pages/TeamSelection';
 import HomeAwaySelection from './pages/HomeAwaySelection';
 import TeamChoice from './pages/TeamChoice';
 import LineupSelection from './pages/LineupSelection';
 import AnalysisPage from './pages/AnalysisPage';
+import PlayerManagement from './pages/PlayerManagement';
+import CustomDataManager from './components/CustomDataManager';
 
 function App() {
   return (
@@ -24,6 +27,16 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/teams" element={
+              <ProtectedRoute>
+                <TeamSelection />
+              </ProtectedRoute>
+            } />
+            <Route path="/players" element={
+              <ProtectedRoute>
+                <PlayerManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/home-away" element={
               <ProtectedRoute>
                 <HomeAwaySelection />
               </ProtectedRoute>
@@ -41,6 +54,11 @@ function App() {
             <Route path="/analysis" element={
               <ProtectedRoute>
                 <AnalysisPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/custom-data" element={
+              <ProtectedRoute>
+                <CustomDataManager />
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/login" replace />} />

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 const LocationModal = ({ onSelect, onClose, eventType, videoRef, setIsPlaying }) => {
   const canvasRef = useRef(null);
@@ -224,8 +225,8 @@ useEffect(() => {
   };
 
   return (
-    <div className="fixed inset-0 bg-transparent flex items-center justify-center p-4 z-50">
-      <div className="bg-white p-6 rounded-xl shadow-2xl max-w-5xl w-full max-h-screen overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white text-gray-900 flex flex-col gap-6 rounded-xl border border-gray-200 py-6 shadow-sm w-full max-w-5xl max-h-screen overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
           Select Event Location on Field
         </h2>
@@ -247,55 +248,57 @@ useEffect(() => {
           <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg mb-6 border-l-4 border-blue-500">
             <h3 className="font-bold text-blue-700 mb-3 text-lg">Field Coordinates</h3>
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <p className="text-sm font-semibold text-gray-700">
+              <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                <p className="text-sm font-semibold text-foreground">
                   <span className="text-blue-600">X Position:</span> {fieldCoordinates.x}m
                 </p>
-                <p className="text-xs text-gray-500 mt-1">Distance from left goal line</p>
+                <p className="text-xs text-muted-foreground mt-1">Distance from left goal line</p>
               </div>
-              <div className="bg-white p-3 rounded-lg shadow-sm">
-                <p className="text-sm font-semibold text-gray-700">
+              <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                <p className="text-sm font-semibold text-foreground">
                   <span className="text-green-600">Y Position:</span> {fieldCoordinates.y}m
                 </p>
-                <p className="text-xs text-gray-500 mt-1">Distance from bottom sideline</p>
+                <p className="text-xs text-muted-foreground mt-1">Distance from bottom sideline</p>
               </div>
             </div>
           </div>
         )}
 
         <div className="flex justify-center gap-4 flex-wrap">
-          <button 
+          <Button 
+            variant="outline"
             onClick={() => {
               setSelectedPoint(null);
               setCursorPosition(null);
             }}
-            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            className="px-6 py-3"
           >
             Clear Selection
-          </button>
+          </Button>
           
-          <button 
+          <Button 
+            variant="destructive"
             onClick={onClose} 
-            className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+            className="px-6 py-3"
           >
             Cancel
-          </button>
+          </Button>
           
           {selectedPoint && fieldCoordinates && (
-            <button 
+            <Button 
               onClick={handleConfirm}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg animate-pulse"
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 animate-pulse"
             >
               Confirm Location
-            </button>
+            </Button>
           )}
         </div>
 
-        <div className="mt-6 text-sm text-gray-600 text-center space-y-2">
+        <div className="mt-6 text-sm text-muted-foreground text-center space-y-2">
           <p className="font-medium">Click anywhere on the field to select coordinates</p>
           <p>Field dimensions: 120m × 80m (standard football field)</p>
           {eventType === 'Goalkeeper' && (
-            <p className="text-red-600 font-medium">
+            <p className="text-destructive font-medium">
               Click near red goal points for goalkeeper events
             </p>
           )}

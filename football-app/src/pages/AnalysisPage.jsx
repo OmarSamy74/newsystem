@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, LogOut, Upload, Play, Pause } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, LogOut, Upload, Play, Pause, Users, Clock, Square } from 'lucide-react';
 
 // Import analysis components
 import Navbar from '../components/Navbar';
@@ -19,6 +20,8 @@ const AnalysisPage = () => {
   const [videoSrc, setVideoSrc] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [events, setEvents] = useState([]);
+  const [currentHalf, setCurrentHalf] = useState('1st Half');
+  const [isHalfActive, setIsHalfActive] = useState(false);
   const videoRef = useRef(null);
   const { state, actions } = useApp();
   const navigate = useNavigate();
@@ -45,11 +48,11 @@ const AnalysisPage = () => {
         playerReceiver: event.playerReceiver || '-',
         playerOut: event.playerOut || '-',
         playerIn: event.playerIn || '-',
-        team: event.team || '-',
+        team: event.team || (state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'),
       }));
       setEvents(parsedEvents);
     }
-  }, []);
+  }, [state.homeTeam, state.awayTeam]);
 
   useEffect(() => {
     return () => {
@@ -120,9 +123,10 @@ const AnalysisPage = () => {
       playerReceiver: updatedEvent.type === 'Sub' ? '-' : updatedEvent.playerReceiver || '-',
       playerOut: updatedEvent.type === 'Sub' ? updatedEvent.playerOut || '-' : '-',
       playerIn: updatedEvent.type === 'Sub' ? updatedEvent.playerIn || '-' : '-',
-      team: updatedEvent.team || '-',
+      team: updatedEvent.team || (state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'),
       startLocation: updatedEvent.type === 'Sub' ? null : updatedEvent.startLocation,
       endLocation: updatedEvent.type === 'Sub' ? null : updatedEvent.endLocation,
+      half: isHalfActive ? currentHalf : 'Not Started',
     };
 
     const updatedEvents = events.filter((event) => event.id !== completedEvent.id);
@@ -149,6 +153,21 @@ const AnalysisPage = () => {
     actions.logout();
     navigate('/login');
   };
+
+  const handleHalfStart = () => {
+    setIsHalfActive(true);
+  };
+
+  const handleHalfEnd = () => {
+    setIsHalfActive(false);
+  };
+
+  const handleHalfChange = (half) => {
+    setCurrentHalf(half);
+    setIsHalfActive(false);
+  };
+
+  const halfOptions = ['1st Half', '2nd Half', 'Extra Time', 'Penalties'];
 
   // Get all players (starting + substitutes) for the event components
   const allPlayers = [...state.lineup.starting, ...state.lineup.substitutes];
@@ -220,6 +239,160 @@ const AnalysisPage = () => {
           </Button>
         </div>
 
+        {/* Half Control */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-600" />
+              Match Period Control
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Half Selection */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium">Period:</label>
+                <select
+                  value={currentHalf}
+                  onChange={(e) => handleHalfChange(e.target.value)}
+                  disabled={isHalfActive}
+                  className="flex h-9 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {halfOptions.map((half) => (
+                    <option key={half} value={half}>
+                      {half}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Indicator */}
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full ${isHalfActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className="text-sm font-medium">
+                  {isHalfActive ? `Recording ${currentHalf}` : 'Not Recording'}
+                </span>
+              </div>
+
+              {/* Control Buttons */}
+              <div className="flex gap-2">
+                {!isHalfActive ? (
+                  <Button 
+                    onClick={handleHalfStart}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Start {currentHalf}
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleHalfEnd}
+                    variant="destructive"
+                  >
+                    <Square className="h-4 w-4 mr-2" />
+                    End {currentHalf}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Current Half Status Banner */}
+        {isHalfActive && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                <div>
+                  <h3 className="text-lg font-semibold">Recording {currentHalf}</h3>
+                  <p className="text-green-100 text-sm">All new events will be tagged with this period</p>
+                </div>
+              </div>
+              <Button 
+                onClick={handleHalfEnd}
+                variant="secondary"
+                className="bg-white text-green-600 hover:bg-green-50"
+              >
+                <Square className="h-4 w-4 mr-2" />
+                End {currentHalf}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Lineup Display */}
+        {state.lineup.starting.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                Starting Lineup ({state.lineup.starting.length}/11)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Formation Display */}
+              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                <h4 className="text-sm font-semibold text-green-800 mb-3">Formation</h4>
+                <div className="grid grid-cols-11 gap-1 text-center">
+                  {state.lineup.starting.map((player, index) => (
+                    <div key={player.id} className="bg-white rounded p-2 border border-gray-200">
+                      <div className="text-xs font-semibold text-green-800">
+                        {player.lineupPosition || 'POS'}
+                      </div>
+                      <div className="text-xs text-green-600 truncate">
+                        {player.name.split(' ')[0]}
+                      </div>
+                      <div className="text-xs text-green-500">
+                        #{player.jersey_number || '?'}
+                      </div>
+                    </div>
+                  ))}
+                  {Array.from({ length: 11 - state.lineup.starting.length }).map((_, index) => (
+                    <div key={`empty-${index}`} className="bg-gray-100 rounded p-2 border border-gray-200">
+                      <div className="text-xs text-gray-400">Empty</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Detailed Player List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {state.lineup.starting.map((player, index) => (
+                  <div key={player.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900">{player.name}</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {player.lineupPosition || player.position || 'Unknown'}
+                          </Badge>
+                          {player.jersey_number && (
+                            <span className="text-xs text-blue-700">#{player.jersey_number}</span>
+                          )}
+                        </div>
+                        {player.lineupPosition && player.position && player.lineupPosition !== player.position && (
+                          <p className="text-xs text-gray-500">
+                            Original: {player.position}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {state.lineup.starting.length < 11 && (
+                <p className="text-sm text-gray-600 mt-4">
+                  {11 - state.lineup.starting.length} more players needed for a complete lineup
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6">
           {/* Video Section */}
           <div className="lg:w-2/3">
@@ -273,6 +446,7 @@ const AnalysisPage = () => {
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
               allPlayers={allPlayers}
+              selectedTeam={state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'}
             />
             <ShotEvents
               videoRef={videoRef}
@@ -281,6 +455,7 @@ const AnalysisPage = () => {
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
               allPlayers={allPlayers}
+              selectedTeam={state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'}
             />
             <PossessionDribblingEvents
               videoRef={videoRef}
@@ -289,6 +464,7 @@ const AnalysisPage = () => {
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
               allPlayers={allPlayers}
+              selectedTeam={state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'}
             />
             <DefensiveEvents
               videoRef={videoRef}
@@ -297,6 +473,7 @@ const AnalysisPage = () => {
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
               allPlayers={allPlayers}
+              selectedTeam={state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'}
             />
             <SetPiecesSpecialEvents
               videoRef={videoRef}
@@ -305,15 +482,16 @@ const AnalysisPage = () => {
               setEvents={setEvents}
               finalizeEvent={finalizeEvent}
               allPlayers={allPlayers}
+              selectedTeam={state.homeTeam?.name || state.awayTeam?.name || 'Unknown Team'}
             />
           </div>
         </div>
 
         {/* Event Table */}
         <div className="mt-8">
-          <EventTable events={events} onEventClick={handleEventClick} setEvents={setEvents} />
+          <EventTable events={events} onEventClick={handleEventClick} setEvents={setEvents} lineup={state.lineup} />
           <div className="mt-4">
-            <ExportButton events={events} />
+            <ExportButton events={events} lineup={state.lineup} />
           </div>
         </div>
       </div>

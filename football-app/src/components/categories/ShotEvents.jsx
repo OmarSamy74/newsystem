@@ -11,7 +11,7 @@ const shotEvents = [
   { type: 'Blocked Shot', text: 'Blocked Shot', shortcut: 'S', color: 'bg-red-700' },
 ];
 
-const ShotEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers }) => {
+const ShotEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers, selectedTeam }) => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
@@ -50,6 +50,7 @@ const ShotEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
       setCurrentEvent({
         type: eventType,
         videoTimestamp: videoRef.current?.currentTime || 0,
+        team: selectedTeam,
       });
       setShowPlayerModal(true);
     }
@@ -98,27 +99,20 @@ const ShotEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
     setCurrentEvent(updatedEvent);
     setShowResultModal(false);
 
-    if (['Saved', 'Goal', 'Penalty Saved', 'Offtarget', 'Post'].includes(result)) {
-      const tempEvent = {
-        ...updatedEvent,
-        id: Date.now() + Math.floor(Math.random() * 1000),
-      };
-      const updatedEvents = [...events, tempEvent];
-      setEvents(updatedEvents);
-      localStorage.setItem('footballEvents', JSON.stringify(updatedEvents));
-      setPendingShotEvent(tempEvent);
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
-      const duration =
-        updatedEvent.endTime && updatedEvent.videoTimestamp
-          ? (updatedEvent.endTime - updatedEvent.videoTimestamp) * 1000 / 1000
-          : 0;
-      updatedEvent.duration = duration;
-      finalizeEvent(updatedEvent);
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
+    // For all shot results, we need to capture end location
+    const tempEvent = {
+      ...updatedEvent,
+      id: Date.now() + Math.floor(Math.random() * 1000),
+    };
+    const updatedEvents = [...events, tempEvent];
+    setEvents(updatedEvents);
+    localStorage.setItem('footballEvents', JSON.stringify(updatedEvents));
+    setPendingShotEvent(tempEvent);
+    
+    // Show goal location modal for all shots to capture end location
+    setShowGoalLocationModal(true);
+    videoRef.current.play();
+    setIsPlaying(true);
   };
 
   const handleGoalLocationSelect = (x, y) => {
@@ -236,6 +230,7 @@ const ShotEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
           onClose={() => setShowGoalLocationModal(false)}
           videoRef={videoRef}
           setIsPlaying={setIsPlaying}
+          title={`Select ${currentEvent?.result || 'Shot'} End Location`}
         />
       )}
       {showExtraInfoModal && (

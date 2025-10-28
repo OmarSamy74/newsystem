@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import goal from "../assets/goall.jpeg";
 
-const GoalLocation = ({ onSelect, onClose, videoRef, setIsPlaying }) => {
+const GoalLocation = ({ onSelect, onClose, videoRef, setIsPlaying, title = "Select Shot End Location" }) => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [coordinates, setCoordinates] = useState({ finalX: null, finalY: null });
 
@@ -52,8 +52,11 @@ const GoalLocation = ({ onSelect, onClose, videoRef, setIsPlaying }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-transparent overflow-y-scroll z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 overflow-y-scroll z-50">
+      <div className="bg-white text-gray-900 flex flex-col gap-6 rounded-xl border border-gray-200 py-6 shadow-sm w-full max-w-2xl">
+        <div className="px-6">
+          <h2 className="text-xl font-bold text-center mb-4">{title}</h2>
+        </div>
         <div className="relative">
           <svg
             width={svgWidth}

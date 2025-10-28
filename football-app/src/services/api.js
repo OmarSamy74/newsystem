@@ -2,7 +2,7 @@
 import { mockLeagues, mockTeams, mockPlayers, mockPositions } from './mockData';
 
 const API_BASE_URL = 'https://iqstats.spotlayer.com';
-const USE_MOCK_DATA = false; // Set to false when API server is available
+const USE_MOCK_DATA = true; // Set to false when API server is available
 
 class ApiService {
   async request(endpoint, options = {}) {

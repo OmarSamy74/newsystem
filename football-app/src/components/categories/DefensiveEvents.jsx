@@ -17,7 +17,7 @@ const defensiveEvents = [
   { type: 'Foul Commit', text: 'Foul Commit', shortcut: '9', color: 'bg-orange-700' },
 ];
 
-const DefensiveEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers }) => {
+const DefensiveEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers, selectedTeam }) => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showGoalkeeperModal, setShowGoalkeeperModal] = useState(false);
@@ -35,6 +35,7 @@ const DefensiveEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEv
     setCurrentEvent({
       type: eventType,
       videoTimestamp: videoRef.current?.currentTime || 0,
+      team: selectedTeam,
     });
     if (eventType === 'Goalkeeper') {
       setShowGoalkeeperModal(true);

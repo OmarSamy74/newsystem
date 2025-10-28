@@ -1,6 +1,6 @@
 import React from "react";
 
-const EventTable = ({ events, onEventClick, setEvents }) => {
+const EventTable = ({ events, onEventClick, setEvents, lineup }) => {
   const formatTimestamp = (timestamp) => {
     if (timestamp === undefined || timestamp === null) return "00:00:00";
     const hours = Math.floor(timestamp / 3600);
@@ -41,6 +41,8 @@ const EventTable = ({ events, onEventClick, setEvents }) => {
                 'ID',
                 'Timestamp',
                 'Duration',
+                'Half',
+                'Lineup',
                 'Event Type',
                 'Player',
                 'Player Receiver',
@@ -51,6 +53,10 @@ const EventTable = ({ events, onEventClick, setEvents }) => {
                 'Start Y',
                 'End X',
                 'End Y',
+                'Goal Location X',
+                'Goal Location Y',
+                'Field Location X',
+                'Field Location Y',
                 'Type',
                 'Outcome',
                 'Extra Info',
@@ -78,6 +84,41 @@ const EventTable = ({ events, onEventClick, setEvents }) => {
                 <td className="px-4 py-2">{index + 1}</td>
                 <td className="px-4 py-2">{formatTimestamp(event.videoTimestamp)}</td>
                 <td className="px-4 py-2">{formatDuration(event.duration)}</td>
+                <td className="px-4 py-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    event.half === '1st Half' ? 'bg-blue-100 text-blue-800' :
+                    event.half === '2nd Half' ? 'bg-green-100 text-green-800' :
+                    event.half === 'Extra Time' ? 'bg-orange-100 text-orange-800' :
+                    event.half === 'Penalties' ? 'bg-purple-100 text-purple-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {event.half || 'Not Started'}
+                  </span>
+                </td>
+                <td className="px-4 py-2">
+                  <div className="max-w-xs">
+                    <div className="text-xs text-gray-600 mb-1">
+                      {lineup?.starting?.length || 0} players
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {lineup?.starting?.slice(0, 3).map((player, idx) => (
+                        <span key={idx} className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded" title={`${player.name} (${player.lineupPosition || player.position})`}>
+                          {player.name?.split(' ')[0] || 'Player'}
+                        </span>
+                      ))}
+                      {lineup?.starting?.length > 3 && (
+                        <span className="px-1 py-0.5 bg-gray-100 text-gray-600 text-xs rounded" title={`${lineup.starting.slice(3).map(p => p.name).join(', ')}`}>
+                          +{lineup.starting.length - 3}
+                        </span>
+                      )}
+                    </div>
+                    {lineup?.starting?.length > 0 && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Formation: {lineup.starting.map(p => p.lineupPosition || p.position).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </td>
                 <td className="px-4 py-2">{event.type || '-'}</td>
              <td className="px-4 py-2">
   {event.type === 'Sub' ? '-' : (event.player || '-')}
@@ -92,10 +133,46 @@ const EventTable = ({ events, onEventClick, setEvents }) => {
   {event.type === 'Sub' ? (event.playerIn || '-') : '-'}
 </td>
                 <td className="px-4 py-2">{event.team || '-'}</td>
-                <td className="px-4 py-2">{event.startLocation?.x || '-'}</td>
-                <td className="px-4 py-2">{event.startLocation?.y || '-'}</td>
-                <td className="px-4 py-2">{event.endLocation?.x || '-'}</td>
-                <td className="px-4 py-2">{event.endLocation?.y || '-'}</td>
+                <td className="px-4 py-2">
+                  {['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.startLocation?.x || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.startLocation?.y || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.endLocation?.x || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.endLocation?.y || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {event.type === 'Shot' 
+                    ? (event.endLocation?.x || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {event.type === 'Shot' 
+                    ? (event.endLocation?.y || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {!['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.startLocation?.x || '-') 
+                    : '-'}
+                </td>
+                <td className="px-4 py-2">
+                  {!['Shot', 'Ground Pass', 'High Pass', 'Low Pass', 'Press'].includes(event.type) 
+                    ? (event.startLocation?.y || '-') 
+                    : '-'}
+                </td>
                 <td className="px-4 py-2">{event.technique || '-'}</td>
                 <td className="px-4 py-2">{event.result || '-'}</td>
                 <td className="px-4 py-2">{event.extraInfo !== undefined && event.extraInfo !== null ? event.extraInfo : '-'}</td>

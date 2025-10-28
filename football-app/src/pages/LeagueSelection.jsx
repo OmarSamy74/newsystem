@@ -5,7 +5,8 @@ import apiService from '../services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Trophy, LogOut } from 'lucide-react';
+import { Loader2, Trophy, LogOut, Plus, Trash2, Settings } from 'lucide-react';
+import CreateLeagueModal from '../components/CreateLeagueModal';
 
 const LeagueSelection = () => {
   const [leagues, setLeagues] = useState([]);
@@ -17,6 +18,9 @@ const LeagueSelection = () => {
   useEffect(() => {
     fetchLeagues();
   }, []);
+
+  // Combine API leagues with custom leagues
+  const allLeagues = [...leagues, ...state.customLeagues];
 
   const fetchLeagues = async () => {
     try {
@@ -41,6 +45,12 @@ const LeagueSelection = () => {
     navigate('/login');
   };
 
+  const handleDeleteCustomLeague = (leagueId) => {
+    if (window.confirm('Are you sure you want to delete this custom league?')) {
+      actions.deleteCustomLeague(leagueId);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -53,7 +63,7 @@ const LeagueSelection = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -63,10 +73,16 @@ const LeagueSelection = () => {
               Welcome back, {state.user?.name}! Choose a league to get started.
             </p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/custom-data')}>
+              <Settings className="h-4 w-4 mr-2" />
+              Manage Data
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {error && (
@@ -75,9 +91,19 @@ const LeagueSelection = () => {
           </Alert>
         )}
 
+        {/* Create League Button */}
+        <div className="mb-6">
+          <CreateLeagueModal>
+            <Button className="w-full md:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Custom League
+            </Button>
+          </CreateLeagueModal>
+        </div>
+
         {/* Leagues Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {leagues.map((league) => (
+          {allLeagues.map((league) => (
             <Card
               key={league.id}
               className="cursor-pointer hover:shadow-lg transition-shadow duration-200 hover:border-blue-300"
@@ -91,20 +117,35 @@ const LeagueSelection = () => {
                 <CardDescription>
                   {league.country && `${league.country} • `}
                   {league.season || 'Current Season'}
+                  {league.isCustom && ' • Custom'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center">
+                <div className="text-center space-y-2">
                   <Button className="w-full">
                     Select League
                   </Button>
+                  {league.isCustom && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCustomLeague(league.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {leagues.length === 0 && !isLoading && (
+        {allLeagues.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No leagues available</h3>

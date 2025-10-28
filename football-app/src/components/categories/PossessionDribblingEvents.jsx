@@ -12,7 +12,7 @@ const possessionDribblingEvents = [
   { type: 'Press', text: 'Press', shortcut: 'G', color: 'bg-green-900' },
 ];
 
-const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers }) => {
+const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers, selectedTeam }) => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -28,6 +28,7 @@ const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, 
     setCurrentEvent({
       type: eventType,
       videoTimestamp: videoRef.current?.currentTime || 0,
+      team: selectedTeam,
     });
     setShowPlayerModal(true);
   };
@@ -40,12 +41,35 @@ const PossessionDribblingEvents = ({ videoRef, setIsPlaying, events, setEvents, 
   };
 
   const handleLocationSelect = async (x, y) => {
-    setCurrentEvent({ ...currentEvent, startLocation: { x, y }, endLocation: { x, y } });
-    setShowLocationModal(false);
-    if (currentEvent.type === 'Dribble') {
-      setShowResultModal(true);
-    } else {
-      finalizeEvent({ ...currentEvent, startLocation: { x, y } });
+    if (locationType === 'start') {
+      try {
+        await videoRef.current.pause();
+        setIsPlaying(false);
+        setCurrentEvent({ ...currentEvent, startLocation: { x, y } });
+        setShowLocationModal(false);
+        
+        // For pressure events, we need to capture end location too
+        if (currentEvent.type === 'Press') {
+          setLocationType('end');
+          setShowLocationModal(true);
+        } else if (currentEvent.type === 'Dribble') {
+          setShowResultModal(true);
+        } else {
+          // For other events (Ball Recovery, Miss control, etc.), only capture start location
+          finalizeEvent({ ...currentEvent, startLocation: { x, y } });
+        }
+      } catch (error) {
+        console.error('Error pausing video:', error);
+      }
+    } else if (locationType === 'end') {
+      setCurrentEvent({ ...currentEvent, endLocation: { x, y } });
+      setShowLocationModal(false);
+      
+      if (currentEvent.type === 'Dribble') {
+        setShowResultModal(true);
+      } else {
+        finalizeEvent({ ...currentEvent, endLocation: { x, y } });
+      }
     }
   };
 

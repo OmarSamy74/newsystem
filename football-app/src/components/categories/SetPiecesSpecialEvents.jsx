@@ -16,7 +16,7 @@ const setPiecesSpecialEvents = [
   { type: 'Sub', text: 'Sub', shortcut: null, color: 'bg-purple-600' },
 ];
 
-const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers }) => {
+const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers, selectedTeam }) => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
@@ -39,18 +39,21 @@ const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, fin
         startTime: videoRef.current?.currentTime || 0,
         endTime: videoRef.current?.currentTime || 0,
         duration: 0,
+        team: selectedTeam,
       };
       finalizeEvent(newEvent);
     } else if (eventType === 'Ball Drop') {
       setCurrentEvent({
         type: eventType,
         videoTimestamp: videoRef.current?.currentTime || 0,
+        team: selectedTeam,
       });
       setShowLocationModal(true);
     } else if (eventType === 'Own Goal For') {
       setCurrentEvent({
         type: eventType,
         videoTimestamp: videoRef.current?.currentTime || 0,
+        team: selectedTeam,
       });
       setShowTeamModal(true);
     } else if (eventType === 'Sub') {
@@ -60,6 +63,7 @@ const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, fin
         player: null,
         playerOut: null,
         playerIn: null,
+        team: selectedTeam,
       });
       setSelectingPlayerOut(true);
       setSelectingPlayerIn(false);
@@ -68,6 +72,7 @@ const SetPiecesSpecialEvents = ({ videoRef, setIsPlaying, events, setEvents, fin
       setCurrentEvent({
         type: eventType,
         videoTimestamp: videoRef.current?.currentTime || 0,
+        team: selectedTeam,
       });
       setShowPlayerModal(true);
     }

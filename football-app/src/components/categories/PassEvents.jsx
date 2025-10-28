@@ -12,7 +12,7 @@ const passEvents = [
   { type: 'Low Pass', text: 'Low Pass', shortcut: 'E', color: 'bg-blue-700' },
 ];
 
-const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers }) => {
+const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, allPlayers, selectedTeam }) => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [showTechniqueModal, setShowTechniqueModal] = useState(false);
@@ -50,6 +50,7 @@ const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
       setCurrentEvent({
         type: eventType,
         videoTimestamp: videoRef.current?.currentTime || 0,
+        team: selectedTeam,
       });
       setShowPlayerModal(true);
     }
@@ -83,6 +84,7 @@ const PassEvents = ({ videoRef, setIsPlaying, events, setEvents, finalizeEvent, 
           playerReceiver: '-',
           result: null,
           endLocation: null,
+          team: selectedTeam,
         };
         const updatedEvents = [...events, tempEvent];
         setEvents(updatedEvents);

@@ -147,19 +147,73 @@ export const mockPlayers = {
 export const mockPositions = [
   {
     id: 1,
-    name: "Goalkeeper"
+    name: "Goalkeeper",
+    short_name: "GK"
   },
   {
     id: 2,
-    name: "Defender"
+    name: "Center Back",
+    short_name: "CB"
   },
   {
     id: 3,
-    name: "Midfielder"
+    name: "Left Back",
+    short_name: "LB"
   },
   {
     id: 4,
-    name: "Forward"
+    name: "Right Back",
+    short_name: "RB"
+  },
+  {
+    id: 5,
+    name: "Defensive Midfielder",
+    short_name: "CDM"
+  },
+  {
+    id: 6,
+    name: "Central Midfielder",
+    short_name: "CM"
+  },
+  {
+    id: 7,
+    name: "Attacking Midfielder",
+    short_name: "CAM"
+  },
+  {
+    id: 8,
+    name: "Left Midfielder",
+    short_name: "LM"
+  },
+  {
+    id: 9,
+    name: "Right Midfielder",
+    short_name: "RM"
+  },
+  {
+    id: 10,
+    name: "Left Wing",
+    short_name: "LW"
+  },
+  {
+    id: 11,
+    name: "Right Wing",
+    short_name: "RW"
+  },
+  {
+    id: 12,
+    name: "Striker",
+    short_name: "ST"
+  },
+  {
+    id: 13,
+    name: "Second Striker",
+    short_name: "SS"
+  },
+  {
+    id: 14,
+    name: "Center Forward",
+    short_name: "CF"
   }
 ];
 
